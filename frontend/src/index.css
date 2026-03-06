@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #102033;
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 89, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(247, 185, 85, 0.2), transparent 32%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 42%, #fff6ef 100%);
+  font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #102033;
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 89, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(247, 185, 85, 0.2), transparent 32%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 42%, #fff6ef 100%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer base {
+  * {
+    @apply border-slate-200;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: Georgia, "Times New Roman", serif;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-[28px] border border-white/60 bg-white/75 p-6 shadow-soft backdrop-blur-xl;
+  }
+
+  .panel-muted {
+    @apply rounded-3xl border border-slate-200/70 bg-white/60 p-5 shadow-sm backdrop-blur;
+  }
+
+  .section-title {
+    @apply text-sm font-semibold uppercase tracking-[0.24em] text-slate-500;
+  }
+
+  .metric-tile {
+    @apply rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm;
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600;
+  }
+
+  .field {
+    @apply w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-coral focus:ring-4 focus:ring-coral/10;
+    caret-color: transparent;
+  }
+
+  .button-primary {
+    @apply inline-flex items-center justify-center rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70;
+  }
+
+  .button-secondary {
+    @apply inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50;
+  }
+}
