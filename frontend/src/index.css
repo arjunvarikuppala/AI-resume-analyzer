@@ -1,14 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  --font-sans: "Manrope", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
   color: #102033;
   background:
-    radial-gradient(circle at top left, rgba(255, 122, 89, 0.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(247, 185, 85, 0.2), transparent 32%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 42%, #fff6ef 100%);
-  font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+    radial-gradient(circle at top left, rgba(255, 122, 89, 0.18), transparent 30%),
+    radial-gradient(circle at 85% 15%, rgba(247, 185, 85, 0.18), transparent 26%),
+    radial-gradient(circle at 50% 100%, rgba(143, 214, 196, 0.18), transparent 32%),
+    linear-gradient(145deg, #fffdf8 0%, #f3f7ff 45%, #eef6ff 100%);
+  font-family: var(--font-sans);
 }
 
 html {
@@ -19,10 +24,14 @@ body {
   margin: 0;
   min-height: 100vh;
   color: #102033;
+  font-family: var(--font-sans);
   background:
-    radial-gradient(circle at top left, rgba(255, 122, 89, 0.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(247, 185, 85, 0.2), transparent 32%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 42%, #fff6ef 100%);
+    radial-gradient(circle at top left, rgba(255, 122, 89, 0.18), transparent 30%),
+    radial-gradient(circle at 85% 15%, rgba(247, 185, 85, 0.18), transparent 26%),
+    radial-gradient(circle at 50% 100%, rgba(143, 214, 196, 0.18), transparent 32%),
+    linear-gradient(145deg, #fffdf8 0%, #f3f7ff 45%, #eef6ff 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
 }
 
 #root {
@@ -34,45 +43,68 @@ body {
     @apply border-slate-200;
   }
 
+  ::selection {
+    @apply bg-coral/20 text-ink;
+  }
+
   h1,
   h2,
   h3,
   h4 {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--font-display);
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    text-wrap: balance;
   }
 }
 
 @layer components {
   .panel {
-    @apply rounded-[28px] border border-white/60 bg-white/75 p-6 shadow-soft backdrop-blur-xl;
+    @apply rounded-[32px] border border-white/70 bg-white/[0.72] p-6 backdrop-blur-xl;
+    box-shadow:
+      0 24px 80px rgba(15, 23, 42, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.72);
   }
 
   .panel-muted {
-    @apply rounded-3xl border border-slate-200/70 bg-white/60 p-5 shadow-sm backdrop-blur;
+    @apply rounded-[28px] border border-white/70 bg-white/[0.68] p-5 backdrop-blur;
+    box-shadow:
+      0 16px 45px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
   .section-title {
-    @apply text-sm font-semibold uppercase tracking-[0.24em] text-slate-500;
+    @apply text-xs font-bold uppercase tracking-[0.32em] text-slate-500;
   }
 
   .metric-tile {
-    @apply rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm;
+    @apply rounded-[28px] border border-white/75 bg-white/[0.78] p-5;
+    box-shadow:
+      0 20px 55px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 
   .pill {
-    @apply inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600;
+    @apply inline-flex items-center rounded-full border border-white/80 bg-white/90 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600;
   }
 
   .field {
-    @apply w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-coral focus:ring-4 focus:ring-coral/10;
-    caret-color: transparent;
+    @apply w-full rounded-[22px] border border-white/80 bg-white/90 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-coral focus:ring-4 focus:ring-coral/10;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    caret-color: #ff7a59;
   }
 
   .button-primary {
-    @apply inline-flex items-center justify-center rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70;
+    @apply inline-flex items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70;
+    box-shadow:
+      0 18px 36px rgba(16, 32, 51, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
   }
 
   .button-secondary {
-    @apply inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50;
+    @apply inline-flex items-center justify-center rounded-full border border-white/[0.85] bg-white/[0.92] px-5 py-3 text-sm font-bold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white;
+    box-shadow:
+      0 14px 30px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
   }
 }

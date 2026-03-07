@@ -4,7 +4,19 @@ import multer from "multer";
 
 import ApiError from "../utils/ApiError.js";
 
-const maxUploadSizeMb = Number(process.env.MAX_UPLOAD_SIZE_MB || 5);
+const parseUploadLimit = () => {
+  const fallbackLimitMb = process.env.VERCEL ? 4 : 5;
+  const configuredLimitMb = Number(process.env.MAX_UPLOAD_SIZE_MB || fallbackLimitMb);
+  const normalizedLimitMb =
+    Number.isFinite(configuredLimitMb) && configuredLimitMb > 0
+      ? configuredLimitMb
+      : fallbackLimitMb;
+
+  // Vercel functions reject larger request bodies before Multer can process them.
+  return process.env.VERCEL ? Math.min(normalizedLimitMb, 4) : normalizedLimitMb;
+};
+
+export const maxUploadSizeMb = parseUploadLimit();
 const allowedExtensions = new Set([".pdf", ".docx"]);
 
 const storage = multer.memoryStorage();

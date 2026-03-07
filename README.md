@@ -174,7 +174,7 @@ JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
 LANGUAGE_TOOL_API_URL=https://api.languagetool.org/v2/check
 LANGUAGE_TOOL_LANGUAGE=en-US
-MAX_UPLOAD_SIZE_MB=5
+MAX_UPLOAD_SIZE_MB=4
 ```
 
 Frontend: copy `frontend/.env.example` to `frontend/.env`
@@ -211,13 +211,27 @@ npm run build:frontend
 
 ### Production Deployment
 
-1. Provision a MongoDB database and set `MONGO_URI`.
-2. Deploy the backend to a Node hosting provider such as Render, Railway, or Fly.io.
-3. Set backend env vars, especially `JWT_SECRET`, `CLIENT_URL`, `MONGO_URI`, and LanguageTool settings.
-4. Deploy the frontend static build from `frontend/dist` to Vercel, Netlify, or any static host.
-5. Set `VITE_API_URL` to the deployed backend URL plus `/api`.
-6. Update backend `CLIENT_URL` to the deployed frontend origin.
-7. Use HTTPS in production for both frontend and backend origins.
+This repository is configured to deploy to a single Vercel project from the repo root:
+
+1. Import the repository into Vercel with the root directory set to the repository root.
+2. Add Vercel environment variables:
+   - `MONGO_URI`
+   - `JWT_SECRET`
+   - `JWT_EXPIRES_IN=7d`
+   - `CLIENT_URL=https://your-project-name.vercel.app`
+   - `LANGUAGE_TOOL_API_URL=https://api.languagetool.org/v2/check`
+   - `LANGUAGE_TOOL_LANGUAGE=en-US`
+   - `MAX_UPLOAD_SIZE_MB=4`
+3. Leave `VITE_API_URL` unset or set it to `/api` so the frontend uses the same Vercel deployment for API calls.
+4. Redeploy after the variables are saved.
+
+Deployment notes:
+
+- `vercel.json` builds the Vite frontend from `frontend/dist`.
+- The backend runs through the root `api/[...path].js` Vercel function and reuses the Express app from `backend/app.js`.
+- Client-side React Router paths are rewritten back to `/` so routes like `/login`, `/dashboard`, and `/history` do not 404 on refresh.
+- Upload size is capped at 4 MB on Vercel to stay under Vercel function request limits.
+- If you use a custom domain, update `CLIENT_URL` to that HTTPS origin. For multiple allowed origins, provide a comma-separated list.
 
 ### Notes
 
