@@ -4,7 +4,7 @@ export const config = {
   maxDuration: 60,
 };
 
-export default async function handler(req, res) {
+const handleRequest = async (req, res) => {
   try {
     await initializeApp();
     return app(req, res);
@@ -17,4 +17,6 @@ export default async function handler(req, res) {
       });
     }
   }
-}
+};
+
+export default handleRequest;
