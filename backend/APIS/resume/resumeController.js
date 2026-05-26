@@ -1,21 +1,28 @@
 import mongoose from "mongoose";
 
-import Resume from "../models/Resume.js";
-import { analyzeResume } from "../services/resumeAnalysisService.js";
-import asyncHandler from "../utils/asyncHandler.js";
-import ApiError from "../utils/ApiError.js";
-import extractResumeText from "../utils/extractResumeText.js";
+import Resume from "../../models/Resume.js";
+import { analyzeResume } from "../../services/resumeAnalysisService.js";
+import asyncHandler from "../../utils/asyncHandler.js";
+import ApiError from "../../utils/ApiError.js";
+import extractResumeText from "../../utils/extractResumeText.js";
 
-export const uploadResume = asyncHandler(async (req, res) => {
+const ensureResumeFile = (req) => {
   if (!req.file) {
     throw new ApiError(400, "Please upload a PDF or DOCX resume.");
   }
+};
 
-  const resumeText = await extractResumeText(req.file);
-
+const ensureResumeHasEnoughContent = (resumeText) => {
   if (resumeText.split(/\s+/).length < 20) {
     throw new ApiError(422, "The uploaded file does not contain enough resume content to analyze.");
   }
+};
+
+export const uploadResume = asyncHandler(async (req, res) => {
+  ensureResumeFile(req);
+
+  const resumeText = await extractResumeText(req.file);
+  ensureResumeHasEnoughContent(resumeText);
 
   const analysis = await analyzeResume(resumeText);
 

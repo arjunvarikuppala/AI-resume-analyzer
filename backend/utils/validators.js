@@ -11,12 +11,13 @@ export const isValidEmail = (email) => EMAIL_REGEX.test(String(email || "").trim
 
 export const validateAuthPayload = ({ email, password }) => {
   const errors = [];
+  const normalizedPassword = typeof password === "string" ? password : "";
 
   if (!email || !isValidEmail(email)) {
     errors.push("A valid email address is required.");
   }
 
-  if (!password || password.length < 8) {
+  if (!normalizedPassword || normalizedPassword.trim().length < 8) {
     errors.push("Password must be at least 8 characters long.");
   }
 

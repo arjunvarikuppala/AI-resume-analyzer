@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 
-import User from "../models/User.js";
-import asyncHandler from "../utils/asyncHandler.js";
-import ApiError from "../utils/ApiError.js";
-import { validateAuthPayload } from "../utils/validators.js";
+import User from "../../models/User.js";
+import asyncHandler from "../../utils/asyncHandler.js";
+import ApiError from "../../utils/ApiError.js";
+import { validateAuthPayload } from "../../utils/validators.js";
 
 const createToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, {

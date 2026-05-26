@@ -8,8 +8,8 @@ const NotFoundPage = () => (
       <p className="mt-4 text-sm text-slate-600">
         The page you requested does not exist or is no longer available.
       </p>
-      <Link className="button-primary mt-6" to="/dashboard">
-        Go to dashboard
+      <Link className="button-primary mt-6" to="/">
+        Go to home
       </Link>
     </section>
   </div>

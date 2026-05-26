@@ -4,9 +4,9 @@ import {
   getResumeById,
   getResumeHistory,
   uploadResume,
-} from "../controllers/resumeController.js";
-import authMiddleware from "../middleware/authMiddleware.js";
-import { uploadSingleResume } from "../middleware/uploadMiddleware.js";
+} from "./resumeController.js";
+import authMiddleware from "../../middleWares/authMiddleware.js";
+import { uploadSingleResume } from "../../middleWares/uploadMiddleware.js";
 
 const router = express.Router();
 

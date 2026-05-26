@@ -7,14 +7,17 @@ Production-ready MERN stack web application for uploading and analyzing resumes 
 ```text
 root
 ├── backend
-│   ├── controllers
-│   ├── middleware
+│   ├── APIS
+│   ├── Config
+│   ├── middleWares
 │   ├── models
-│   ├── routes
 │   ├── services
+│   ├── tests
 │   ├── utils
 │   ├── .env.example
 │   ├── package.json
+│   ├── req.http
+│   ├── app.js
 │   └── server.js
 ├── frontend
 │   ├── src
@@ -38,7 +41,9 @@ root
 
 ## 2. Backend Code
 
-- Express server with `helmet`, `cors`, `morgan`, JSON parsing, environment loading, and centralized error handling.
+- Express backend split into `Config`, `APIS`, `middleWares`, `models`, `services`, and `utils`.
+- `app.js` builds the Express app with `helmet`, `cors`, `morgan`, body parsing, routes, and centralized error handling.
+- `server.js` is the runtime entrypoint for local and production Node deployments.
 - JWT authentication with secure password hashing using `bcryptjs`.
 - Resume upload endpoint using `multer` memory storage.
 - Text extraction via `pdf-parse` for PDF and `mammoth` for DOCX.
@@ -47,11 +52,14 @@ root
 Main backend files:
 
 - `backend/server.js`
-- `backend/controllers/authController.js`
-- `backend/controllers/resumeController.js`
-- `backend/middleware/authMiddleware.js`
-- `backend/middleware/uploadMiddleware.js`
-- `backend/middleware/errorHandler.js`
+- `backend/app.js`
+- `backend/Config/database.js`
+- `backend/Config/env.js`
+- `backend/APIS/auth/authRoutes.js`
+- `backend/APIS/resume/resumeRoutes.js`
+- `backend/middleWares/authMiddleware.js`
+- `backend/middleWares/uploadMiddleware.js`
+- `backend/middleWares/errorHandler.js`
 
 ## 3. Database Models
 
@@ -101,8 +109,8 @@ Model files:
 
 Route files:
 
-- `backend/routes/authRoutes.js`
-- `backend/routes/resumeRoutes.js`
+- `backend/APIS/auth/authRoutes.js`
+- `backend/APIS/resume/resumeRoutes.js`
 
 ## 5. Resume Analysis Service
 
@@ -197,6 +205,12 @@ Run the backend:
 npm run dev:backend
 ```
 
+Run backend smoke tests:
+
+```bash
+npm run test --workspace backend
+```
+
 Run the frontend:
 
 ```bash
@@ -229,6 +243,7 @@ Deployment notes:
 
 - `vercel.json` builds the Vite frontend from `frontend/dist`.
 - The backend runs through the root `api/[...path].js` Vercel function and reuses the Express app from `backend/app.js`.
+- `backend/server.js` handles local production-style startup, graceful shutdown, and database cleanup for Node deployments.
 - Client-side React Router paths are rewritten back to `/` so routes like `/login`, `/dashboard`, and `/history` do not 404 on refresh.
 - Upload size is capped at 4 MB on Vercel to stay under Vercel function request limits.
 - If you use a custom domain, update `CLIENT_URL` to that HTTPS origin. For multiple allowed origins, provide a comma-separated list.
@@ -238,3 +253,4 @@ Deployment notes:
 - The backend stores resume text and analysis metadata, not the raw uploaded file.
 - If the LanguageTool API is temporarily unavailable, the analysis still completes and records a warning.
 - The project root includes helper scripts for installing dependencies and running frontend/backend services independently.
+- `backend/req.http` includes ready-to-run REST Client requests for health, auth, resume history, resume detail, and upload testing.
