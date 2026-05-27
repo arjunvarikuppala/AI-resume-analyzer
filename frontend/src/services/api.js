@@ -3,7 +3,18 @@ import axios from "axios";
 const TOKEN_KEY = "ai_resume_token";
 const USER_KEY = "ai_resume_user";
 
-let apiBaseUrl = import.meta.env.VITE_API_URL || "/api";
+let apiBaseUrl = import.meta.env.VITE_API_URL;
+
+if (!apiBaseUrl || apiBaseUrl === "/api") {
+  const isLocal =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "[::1]");
+
+  apiBaseUrl = isLocal ? "/api" : "https://ai-resume-analyzer-gol8.onrender.com/api";
+}
+
 if (apiBaseUrl !== "/api" && !apiBaseUrl.endsWith("/api") && !apiBaseUrl.endsWith("/api/")) {
   apiBaseUrl = apiBaseUrl.replace(/\/+$/, "") + "/api";
 }
