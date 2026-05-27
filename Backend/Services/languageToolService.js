@@ -19,7 +19,7 @@ export const checkGrammar = async (text) => {
 
   const endpoint = process.env.LANGUAGE_TOOL_API_URL || "https://api.languagetool.org/v2/check";
   const payload = new URLSearchParams({
-    text: trimmed.slice(0, 5000),
+    text: trimmed.slice(0, 3000),
     language: process.env.LANGUAGE_TOOL_LANGUAGE || "en-US",
   });
 
@@ -28,7 +28,7 @@ export const checkGrammar = async (text) => {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      timeout: 10000,
+      timeout: 3000,
     });
 
     return {

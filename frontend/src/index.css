@@ -1,12 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-sans: "Manrope", sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-display: "Outfit", sans-serif;
   --surface: #f6fbff;
   color: #102033;
   background:
