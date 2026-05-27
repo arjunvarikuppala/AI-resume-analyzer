@@ -3,8 +3,13 @@ import axios from "axios";
 const TOKEN_KEY = "ai_resume_token";
 const USER_KEY = "ai_resume_user";
 
+let apiBaseUrl = import.meta.env.VITE_API_URL || "/api";
+if (apiBaseUrl !== "/api" && !apiBaseUrl.endsWith("/api") && !apiBaseUrl.endsWith("/api/")) {
+  apiBaseUrl = apiBaseUrl.replace(/\/+$/, "") + "/api";
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: apiBaseUrl,
 });
 
 api.interceptors.request.use((config) => {
