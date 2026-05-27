@@ -1,0 +1,40 @@
+### Health Check
+GET http://localhost:5000/api/health
+
+### User Register
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "tester@example.com",
+  "password": "Password123"
+}
+
+### User Login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "tester@example.com",
+  "password": "Password123"
+}
+
+### Upload Resume
+POST http://localhost:5000/api/resume/upload
+Content-Type: multipart/form-data; boundary=ResumeBoundary
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTBhOTNjNDBiNjk2MWQzYTBmNjVkZDciLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzkwNzk5MTQsImV4cCI6MTc3OTA4MzUxNH0.uHO02LHYk7eW9HYFa3ZX-TCHJfZerx4UfmbuNb1ZTmo
+
+--ResumeBoundary
+Content-Disposition: form-data; name="resume"; filename="resume.pdf"
+Content-Type: application/pdf
+
+< ./resume.pdf
+--ResumeBoundary--
+
+### Resume History
+GET http://localhost:5000/api/resume/history
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTBhOTNjNDBiNjk2MWQzYTBmNjVkZDciLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzkwNzk5MTQsImV4cCI6MTc3OTA4MzUxNH0.uHO02LHYk7eW9HYFa3ZX-TCHJfZerx4UfmbuNb1ZTmo
+
+### Resume Detail by ID
+GET http://localhost:5000/api/resume/6a0bde50175bd14af4b026d0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTBhOTNjNDBiNjk2MWQzYTBmNjVkZDciLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzkwNzk5MTQsImV4cCI6MTc3OTA4MzUxNH0.uHO02LHYk7eW9HYFa3ZX-TCHJfZerx4UfmbuNb1ZTmo

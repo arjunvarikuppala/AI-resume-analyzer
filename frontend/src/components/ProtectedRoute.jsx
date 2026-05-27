@@ -1,10 +1,11 @@
 import { Navigate } from "react-router-dom";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../stores/authStore";
 import LoadingSpinner from "./LoadingSpinner";
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const loading = useAuthStore((state) => state.loading);
 
   if (loading) {
     return <LoadingSpinner label="Restoring your session..." />;
@@ -18,4 +19,3 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default ProtectedRoute;
-

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
-import Resume from "../../models/Resume.js";
-import { analyzeResume } from "../../services/resumeAnalysisService.js";
+import Resume from "../../Models/Resume.js";
+import { analyzeResume } from "../../Services/resumeAnalysisService.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/ApiError.js";
 import extractResumeText from "../../utils/extractResumeText.js";

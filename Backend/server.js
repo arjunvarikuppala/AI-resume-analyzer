@@ -1,13 +1,76 @@
+import cors from "cors";
+import express from "express";
+import helmet from "helmet";
+import morgan from "morgan";
 import { pathToFileURL } from "url";
 
-import app, { closeApp, initializeApp } from "./app.js";
-import { getServerConfig } from "./Config/env.js";
+import { registerApiRoutes } from "./APIS/index.js";
+import { getCorsOptions } from "./Config/cors.js";
+import { closeDatabase, connectDatabase, getDatabaseStatus } from "./Config/database.js";
+import { ensureRuntimeConfig, getNodeEnv, getServerConfig } from "./Config/env.js";
+import { errorHandler, notFound } from "./middelWares/errorHandler.js";
 
 const SHUTDOWN_SIGNALS = ["SIGINT", "SIGTERM"];
 
+let initializationPromise;
 let server;
 let processHandlersRegistered = false;
 let shutdownPromise;
+
+const createHealthPayload = () => ({
+  status: "ok",
+  environment: getNodeEnv(),
+  timestamp: new Date().toISOString(),
+  uptime: Number(process.uptime().toFixed(2)),
+  database: getDatabaseStatus(),
+});
+
+export const createApp = () => {
+  const nextApp = express();
+  const serverConfig = getServerConfig();
+
+  nextApp.disable("x-powered-by");
+  nextApp.set("trust proxy", serverConfig.trustProxy);
+
+  nextApp.use(helmet());
+  nextApp.use(cors(getCorsOptions()));
+  nextApp.use(express.json({ limit: serverConfig.jsonBodyLimit }));
+  nextApp.use(express.urlencoded({ extended: true }));
+  nextApp.use(morgan(getNodeEnv() === "production" ? "combined" : "dev"));
+
+  nextApp.get("/api/health", (_req, res) => {
+    res.status(200).json(createHealthPayload());
+  });
+
+  registerApiRoutes(nextApp);
+
+  nextApp.use(notFound);
+  nextApp.use(errorHandler);
+
+  return nextApp;
+};
+
+const app = createApp();
+
+export const initializeApp = async () => {
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      ensureRuntimeConfig();
+      await connectDatabase();
+      return app;
+    })().catch((error) => {
+      initializationPromise = undefined;
+      throw error;
+    });
+  }
+
+  return initializationPromise;
+};
+
+export const closeApp = async () => {
+  initializationPromise = undefined;
+  await closeDatabase();
+};
 
 const closeHttpServer = () =>
   new Promise((resolve, reject) => {
@@ -82,7 +145,7 @@ const gracefulShutdown = async (signal, exitCode = 0) => {
   process.exit(exitCode);
 };
 
-const registerProcessHandlers = () => {
+export const registerProcessHandlers = () => {
   if (processHandlersRegistered) {
     return;
   }
@@ -117,6 +180,11 @@ const registerProcessHandlers = () => {
   });
 };
 
+export const runServer = async () => {
+  registerProcessHandlers();
+  return startServer();
+};
+
 const isDirectExecution = () => {
   if (!process.argv[1]) {
     return false;
@@ -126,10 +194,10 @@ const isDirectExecution = () => {
 };
 
 if (isDirectExecution()) {
-  registerProcessHandlers();
-
-  startServer().catch((error) => {
+  runServer().catch((error) => {
     console.error("Failed to start server:", error.message);
     process.exit(1);
   });
 }
+
+export default app;

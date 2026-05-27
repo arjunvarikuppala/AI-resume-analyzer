@@ -1,8 +1,8 @@
+import { useEffect } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuth } from "./context/AuthContext";
 import DashboardPage from "./pages/DashboardPage";
 import HistoryPage from "./pages/HistoryPage";
 import LandingPage from "./pages/LandingPage";
@@ -10,6 +10,8 @@ import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResumeDetailPage from "./pages/ResumeDetailPage";
+import { useAuthStore } from "./stores/authStore";
+import { useResumeStore } from "./stores/resumeStore";
 
 const ProtectedLayout = () => (
   <ProtectedRoute>
@@ -23,7 +25,22 @@ const ProtectedLayout = () => (
 );
 
 function App() {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const clearResumeData = useResumeStore((state) => state.clearResumeData);
+
+  useEffect(() => {
+    const handleExpiredSession = () => {
+      logout();
+      clearResumeData();
+    };
+
+    window.addEventListener("auth:expired", handleExpiredSession);
+
+    return () => {
+      window.removeEventListener("auth:expired", handleExpiredSession);
+    };
+  }, [clearResumeData, logout]);
 
   return (
     <Routes>

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import HistoryTable from "../components/HistoryTable";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { getResumeHistory } from "../services/resumeService";
+import { useResumeStore } from "../stores/resumeStore";
 
 const formatInsightDate = (value) =>
   new Intl.DateTimeFormat("en-US", {
@@ -12,27 +12,14 @@ const formatInsightDate = (value) =>
   }).format(new Date(value));
 
 const HistoryPage = () => {
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const history = useResumeStore((state) => state.history);
+  const loading = useResumeStore((state) => state.historyLoading);
+  const error = useResumeStore((state) => state.historyError);
+  const loadHistory = useResumeStore((state) => state.loadHistory);
 
   useEffect(() => {
-    const loadHistory = async () => {
-      setLoading(true);
-      setError("");
-
-      try {
-        const response = await getResumeHistory();
-        setHistory(response.resumes);
-      } catch (requestError) {
-        setError(requestError.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadHistory();
-  }, []);
+  }, [loadHistory]);
 
   if (loading) {
     return <LoadingSpinner label="Loading history..." />;
@@ -138,7 +125,7 @@ const HistoryPage = () => {
         </div>
       ) : null}
 
-      <HistoryTable history={history} />
+      <HistoryTable />
     </div>
   );
 };

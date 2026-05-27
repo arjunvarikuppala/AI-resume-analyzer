@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 
 import ProductPreviewCard from "../components/ProductPreviewCard"
 import PublicHeader from "../components/PublicHeader"
-import { useAuth } from "../context/AuthContext"
+import { useAuthStore } from "../stores/authStore"
 
 const heroMetrics = [
   { label: "Checks", value: "19+" },
@@ -41,7 +41,7 @@ const workflowSteps = [
 ]
 
 const LandingPage = () => {
-  const { isAuthenticated } = useAuth()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   return (
     <div className="site-shell min-h-screen pb-14">

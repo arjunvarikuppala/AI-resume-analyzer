@@ -1,61 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
-import AnalysisListCard from "../components/AnalysisListCard";
+import AnalyzingOverlay from "../components/AnalyzingOverlay";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ResumeUploadPanel from "../components/ResumeUploadPanel";
 import ScoreOverview from "../components/ScoreOverview";
-import { useAuth } from "../context/AuthContext";
-import { getResumeById, getResumeHistory, uploadResume } from "../services/resumeService";
+import { useAuthStore } from "../stores/authStore";
+import { useResumeStore } from "../stores/resumeStore";
 
 const DashboardPage = () => {
-  const { user } = useAuth();
-  const [history, setHistory] = useState([]);
-  const [latestResume, setLatestResume] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
-
-  const loadDashboard = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const historyResponse = await getResumeHistory();
-      setHistory(historyResponse.resumes);
-
-      if (historyResponse.resumes.length) {
-        const latestResponse = await getResumeById(historyResponse.resumes[0]._id);
-        setLatestResume(latestResponse.resume);
-      } else {
-        setLatestResume(null);
-      }
-    } catch (requestError) {
-      setError(requestError.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const user = useAuthStore((state) => state.user);
+  const history = useResumeStore((state) => state.history);
+  const latestResume = useResumeStore((state) => state.latestResume);
+  const loading = useResumeStore((state) => state.dashboardLoading);
+  const error = useResumeStore((state) => state.dashboardError);
+  const loadDashboard = useResumeStore((state) => state.loadDashboard);
 
   useEffect(() => {
     loadDashboard();
-  }, []);
-
-  const handleUpload = async (file) => {
-    setUploading(true);
-    setError("");
-
-    try {
-      const response = await uploadResume(file);
-      setLatestResume(response.resume);
-      const historyResponse = await getResumeHistory();
-      setHistory(historyResponse.resumes);
-    } catch (requestError) {
-      setError(requestError.message);
-    } finally {
-      setUploading(false);
-    }
-  };
+  }, [loadDashboard]);
 
   if (loading) {
     return <LoadingSpinner label="Loading dashboard..." />;
@@ -63,6 +26,7 @@ const DashboardPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      <AnalyzingOverlay />
       <section className="panel grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-4">
           <p className="section-title">Overview</p>
@@ -112,75 +76,11 @@ const DashboardPage = () => {
         </div>
       ) : null}
 
-      <ResumeUploadPanel onUpload={handleUpload} loading={uploading} />
+      <ResumeUploadPanel />
 
       {latestResume ? (
         <>
-          <ScoreOverview resume={latestResume} />
-          <div className="grid gap-5 xl:grid-cols-2">
-            <AnalysisListCard
-              title="Improvement Suggestions"
-              subtitle="Action Plan"
-              items={latestResume.suggestions}
-              emptyMessage="No suggestions were generated for this resume."
-            />
-            <AnalysisListCard
-              title="Missing Skills"
-              subtitle="Keyword Gaps"
-              items={latestResume.missingSkills}
-              emptyMessage="All tracked technical skills were detected."
-            />
-            <AnalysisListCard
-              title="Missing Sections"
-              subtitle="Structure"
-              items={latestResume.missingSections}
-              emptyMessage="All required resume sections were detected."
-            />
-            <AnalysisListCard
-              title="Formatting Issues"
-              subtitle="Presentation"
-              items={latestResume.formattingIssues}
-              emptyMessage="No formatting inconsistencies were detected."
-            />
-            <AnalysisListCard
-              title="Spelling Mistakes"
-              subtitle="Language"
-              items={latestResume.spellingErrors}
-              emptyMessage="No spelling issues were detected."
-              renderItem={(item) => (
-                <div className="flex flex-col gap-2 text-sm text-slate-700">
-                  <p className="font-semibold text-ink">
-                    {item.word} <span className="font-normal text-slate-500">({item.count})</span>
-                  </p>
-                  <p>Suggestions: {item.suggestions.length ? item.suggestions.join(", ") : "None"}</p>
-                </div>
-              )}
-            />
-            <AnalysisListCard
-              title="Grammar Issues"
-              subtitle="Readability"
-              items={latestResume.grammarErrors}
-              emptyMessage="No grammar issues were detected."
-              renderItem={(item) => (
-                <div className="space-y-2 text-sm text-slate-700">
-                  <p className="font-semibold text-ink">{item.message}</p>
-                  {item.sentence ? <p className="text-slate-500">Context: {item.sentence}</p> : null}
-                  {item.replacements.length ? (
-                    <p>Suggestions: {item.replacements.join(", ")}</p>
-                  ) : null}
-                </div>
-              )}
-            />
-          </div>
-
-          {latestResume.analysisWarnings?.length ? (
-            <AnalysisListCard
-              title="Analysis Warnings"
-              subtitle="System Notes"
-              items={latestResume.analysisWarnings}
-              emptyMessage="No warnings."
-            />
-          ) : null}
+          <ScoreOverview />
         </>
       ) : (
         <div className="panel flex flex-col gap-4">
@@ -211,4 +111,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-

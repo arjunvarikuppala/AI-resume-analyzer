@@ -17,8 +17,8 @@ root
 │   ├── .env.example
 │   ├── package.json
 │   ├── req.http
-│   ├── app.js
 │   └── server.js
+├── server.js
 ├── frontend
 │   ├── src
 │   │   ├── components
@@ -42,8 +42,8 @@ root
 ## 2. Backend Code
 
 - Express backend split into `Config`, `APIS`, `middleWares`, `models`, `services`, and `utils`.
-- `app.js` builds the Express app with `helmet`, `cors`, `morgan`, body parsing, routes, and centralized error handling.
-- `server.js` is the runtime entrypoint for local and production Node deployments.
+- `backend/server.js` builds the Express app, initializes the database, and runs the Node server.
+- The root `server.js` is only a deployment entrypoint for platforms that start from the repo root.
 - JWT authentication with secure password hashing using `bcryptjs`.
 - Resume upload endpoint using `multer` memory storage.
 - Text extraction via `pdf-parse` for PDF and `mammoth` for DOCX.
@@ -52,7 +52,6 @@ root
 Main backend files:
 
 - `backend/server.js`
-- `backend/app.js`
 - `backend/Config/database.js`
 - `backend/Config/env.js`
 - `backend/APIS/auth/authRoutes.js`
@@ -180,6 +179,7 @@ MONGO_URI=mongodb://127.0.0.1:27017/ai-resume-analyzer
 JWT_SECRET=replace_this_with_a_long_secret
 JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
+CORS_ORIGINS=http://localhost:5173
 LANGUAGE_TOOL_API_URL=https://api.languagetool.org/v2/check
 LANGUAGE_TOOL_LANGUAGE=en-US
 MAX_UPLOAD_SIZE_MB=4
@@ -225,28 +225,28 @@ npm run build:frontend
 
 ### Production Deployment
 
-This repository is configured to deploy to a single Vercel project from the repo root:
+For Node hosting platforms such as Render:
 
-1. Import the repository into Vercel with the root directory set to the repository root.
-2. Add Vercel environment variables:
+1. Deploy from the repository root.
+2. Use the start command `node server.js` or `npm start`.
+3. Add backend environment variables:
    - `MONGO_URI`
    - `JWT_SECRET`
    - `JWT_EXPIRES_IN=7d`
-   - `CLIENT_URL=https://your-project-name.vercel.app`
+   - `CLIENT_URL=https://your-frontend-domain`
+   - `CORS_ORIGINS=https://your-frontend-domain,https://www.your-frontend-domain`
    - `LANGUAGE_TOOL_API_URL=https://api.languagetool.org/v2/check`
    - `LANGUAGE_TOOL_LANGUAGE=en-US`
    - `MAX_UPLOAD_SIZE_MB=4`
-3. Leave `VITE_API_URL` unset or set it to `/api` so the frontend uses the same Vercel deployment for API calls.
-4. Redeploy after the variables are saved.
+   - `NODE_ENV=production`
 
 Deployment notes:
 
-- `vercel.json` builds the Vite frontend from `frontend/dist`.
-- The backend runs through the root `api/[...path].js` Vercel function and reuses the Express app from `backend/app.js`.
-- `backend/server.js` handles local production-style startup, graceful shutdown, and database cleanup for Node deployments.
-- Client-side React Router paths are rewritten back to `/` so routes like `/login`, `/dashboard`, and `/history` do not 404 on refresh.
-- Upload size is capped at 4 MB on Vercel to stay under Vercel function request limits.
-- If you use a custom domain, update `CLIENT_URL` to that HTTPS origin. For multiple allowed origins, provide a comma-separated list.
+- `backend/server.js` is the single backend entry and contains the Express app setup plus runtime startup.
+- The root `server.js` simply forwards startup to `backend/server.js` for platforms that expect a root entry file.
+- If your frontend is deployed separately, set `VITE_API_URL` to your backend base URL plus `/api`.
+- If you use a custom domain, update `CLIENT_URL` and preferably `CORS_ORIGINS` to the exact HTTPS origins you want to allow.
+- `CORS_ORIGINS` supports comma-separated values and wildcard host patterns such as `https://*.vercel.app`.
 
 ### Notes
 

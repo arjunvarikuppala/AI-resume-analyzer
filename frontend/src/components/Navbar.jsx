@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../stores/authStore";
+import { useResumeStore } from "../stores/resumeStore";
 import BrandMark from "./BrandMark";
 
 const linkClass = ({ isActive }) =>
@@ -11,11 +12,14 @@ const linkClass = ({ isActive }) =>
   }`;
 
 const Navbar = () => {
-  const { logout, user } = useAuth();
+  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+  const clearResumeData = useResumeStore((state) => state.clearResumeData);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
+    clearResumeData();
     navigate("/login");
   };
 

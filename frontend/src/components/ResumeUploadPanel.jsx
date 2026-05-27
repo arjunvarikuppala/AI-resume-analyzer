@@ -1,8 +1,12 @@
 import { useRef, useState } from "react";
 
+import { useResumeStore } from "../stores/resumeStore";
+
 const acceptedExtensions = [".pdf", ".docx"];
 
-const ResumeUploadPanel = ({ onUpload, loading }) => {
+const ResumeUploadPanel = () => {
+  const uploadResume = useResumeStore((state) => state.uploadResume);
+  const loading = useResumeStore((state) => state.uploading);
   const inputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
@@ -45,7 +49,7 @@ const ResumeUploadPanel = ({ onUpload, loading }) => {
       return;
     }
 
-    await onUpload(selectedFile);
+    await uploadResume(selectedFile);
     setSelectedFile(null);
 
     if (inputRef.current) {

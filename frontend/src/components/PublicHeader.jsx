@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 
-import { useAuth } from "../context/AuthContext"
 import BrandMark from "./BrandMark"
+import { useAuthStore } from "../stores/authStore"
 
 const navItems = [
   { href: "/#product", label: "Features" },
@@ -9,7 +9,7 @@ const navItems = [
 ]
 
 const PublicHeader = () => {
-  const { isAuthenticated } = useAuth()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   return (
     <header className="relative z-20 px-4 pt-4 sm:px-6 lg:px-8">

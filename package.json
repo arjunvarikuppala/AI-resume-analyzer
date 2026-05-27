@@ -4,15 +4,16 @@
   "version": "1.0.0",
   "type": "module",
   "workspaces": [
-    "frontend",
-    "backend"
+    "Frontend",
+    "Backend"
   ],
   "scripts": {
+    "start": "node server.js",
     "install:all": "npm install",
-    "dev:backend": "npm run dev --workspace backend",
-    "dev:frontend": "npm run dev --workspace frontend",
-    "build": "npm run build --workspace frontend",
-    "build:frontend": "npm run build --workspace frontend",
-    "start:backend": "npm run start --workspace backend"
+    "dev:backend": "npm run dev --workspace Backend",
+    "dev:frontend": "npm run dev --workspace Frontend",
+    "build": "npm run build --workspace Frontend",
+    "build:frontend": "npm run build --workspace Frontend",
+    "start:backend": "npm run start --workspace Backend"
   }
 }

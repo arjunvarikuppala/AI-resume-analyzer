@@ -12,7 +12,7 @@ const parseUploadLimit = () => {
       ? configuredLimitMb
       : fallbackLimitMb;
 
-  // Vercel functions reject larger request bodies before Multer can process them.
+  // Some serverless platforms reject larger request bodies before Multer can process them.
   return process.env.VERCEL ? Math.min(normalizedLimitMb, 4) : normalizedLimitMb;
 };
 

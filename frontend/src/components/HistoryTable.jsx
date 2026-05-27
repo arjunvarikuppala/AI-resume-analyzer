@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+import { useResumeStore } from "../stores/resumeStore";
+
 const formatDate = (value) =>
   new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
@@ -58,7 +60,9 @@ const getFileBadge = (fileName = "") => {
   return "CV";
 };
 
-const HistoryTable = ({ history }) => {
+const HistoryTable = () => {
+  const history = useResumeStore((state) => state.history);
+
   if (!history.length) {
     return (
       <div className="panel relative overflow-hidden">
