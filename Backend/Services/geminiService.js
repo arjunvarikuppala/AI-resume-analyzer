@@ -1,17 +1,4 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
-
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey || apiKey === "your_gemini_api_key_here") {
-  console.warn("WARNING: GEMINI_API_KEY is not configured or has placeholder value.");
-}
-
-const genAI = new GoogleGenerativeAI(apiKey || "");
 
 /**
  * Analyzes resume text using Gemini AI, optionally matching it against a job description.
@@ -21,7 +8,7 @@ const genAI = new GoogleGenerativeAI(apiKey || "");
  * @returns {Promise<object>} JSON-structured analysis
  */
 export const analyzeResumeWithAI = async (resumeText, jobDescription = null, customApiKey = null) => {
-  const activeApiKey = customApiKey || apiKey;
+  const activeApiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!activeApiKey || activeApiKey === "your_gemini_api_key_here") {
     throw new Error("Gemini API key is not configured. Please add GEMINI_API_KEY to your .env file or provide a custom key.");
   }

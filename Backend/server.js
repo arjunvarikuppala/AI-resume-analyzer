@@ -1,3 +1,5 @@
+import { ensureRuntimeConfig, getNodeEnv, getServerConfig } from "./Config/env.js";
+
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -7,7 +9,6 @@ import { pathToFileURL } from "url";
 import { registerApiRoutes } from "./APIS/index.js";
 import { getCorsOptions } from "./Config/cors.js";
 import { closeDatabase, connectDatabase, getDatabaseStatus } from "./Config/database.js";
-import { ensureRuntimeConfig, getNodeEnv, getServerConfig } from "./Config/env.js";
 import { errorHandler, notFound } from "./middelWares/errorHandler.js";
 
 const SHUTDOWN_SIGNALS = ["SIGINT", "SIGTERM"];

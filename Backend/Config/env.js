@@ -3,7 +3,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+export const getNodeEnv = () => process.env.NODE_ENV || "development";
+
+if (getNodeEnv() !== "production") {
+  dotenv.config({ path: path.resolve(__dirname, "../.env") });
+}
 
 const DEFAULT_PORT = 5000;
 const DEFAULT_HOST = "0.0.0.0";
@@ -35,7 +40,7 @@ const parseTrustProxy = (value) => {
   return Number.isFinite(parsedValue) ? parsedValue : value;
 };
 
-export const getNodeEnv = () => process.env.NODE_ENV || "development";
+
 
 export const ensureRuntimeConfig = () => {
   const missing = ["JWT_SECRET"].filter((key) => !process.env[key]);
@@ -46,6 +51,13 @@ export const ensureRuntimeConfig = () => {
 
   if (missing.length) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (apiKey && apiKey !== "your_gemini_api_key_here") {
+    console.log("✅ Gemini API key detected.");
+  } else {
+    console.warn("⚠️  WARNING: Gemini API key missing or invalid. Calls to Gemini AI will fail.");
   }
 };
 

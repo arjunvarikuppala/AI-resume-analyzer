@@ -183,6 +183,7 @@ CORS_ORIGINS=http://localhost:5173
 LANGUAGE_TOOL_API_URL=https://api.languagetool.org/v2/check
 LANGUAGE_TOOL_LANGUAGE=en-US
 MAX_UPLOAD_SIZE_MB=4
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 Frontend: copy `frontend/.env.example` to `frontend/.env`
@@ -238,7 +239,18 @@ For Node hosting platforms such as Render:
    - `LANGUAGE_TOOL_API_URL=https://api.languagetool.org/v2/check`
    - `LANGUAGE_TOOL_LANGUAGE=en-US`
    - `MAX_UPLOAD_SIZE_MB=4`
+   - `GEMINI_API_KEY=your_production_gemini_key`
    - `NODE_ENV=production`
+
+### Vercel Deployment (Frontend)
+
+If you are deploying the Frontend to Vercel:
+
+1. Connect your GitHub repository to Vercel.
+2. Vercel will automatically detect the `vercel.json` configuration.
+3. In the Vercel Project Settings > Environment Variables, add:
+   - `VITE_API_URL`: Your backend API URL (e.g., `https://your-backend.onrender.com/api`)
+4. **Note:** Do NOT add `.env` files to Vercel. Always use the Project Settings UI to securely configure environment variables. If you migrate the backend to Vercel Serverless Functions, add `GEMINI_API_KEY` in the Vercel UI as well.
 
 Deployment notes:
 
