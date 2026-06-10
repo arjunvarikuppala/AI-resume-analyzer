@@ -106,6 +106,55 @@ const resumeSchema = new mongoose.Schema(
       type: scoreBreakdownSchema,
       default: () => ({}),
     },
+    strengths: {
+      type: [String],
+      default: [],
+    },
+    weaknesses: {
+      type: [String],
+      default: [],
+    },
+    missingKeywords: {
+      type: [String],
+      default: [],
+    },
+    recommendedSkills: {
+      type: [String],
+      default: [],
+    },
+    projectImprovements: {
+      type: [String],
+      default: [],
+    },
+    experienceImprovements: {
+      type: [String],
+      default: [],
+    },
+    grammarSuggestions: {
+      type: [String],
+      default: [],
+    },
+    overallRecommendation: {
+      type: String,
+      default: "",
+    },
+    recommendations: {
+      type: [String],
+      default: [],
+    },
+    aiSummary: {
+      type: String,
+      default: "",
+    },
+    jobMatchScore: {
+      type: Number,
+      default: 0,
+    },
+    jobMatchAnalysis: {
+      missingSkills: { type: [String], default: [] },
+      missingKeywords: { type: [String], default: [] },
+      recommendedImprovements: { type: [String], default: [] },
+    },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

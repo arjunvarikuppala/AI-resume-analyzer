@@ -9,8 +9,19 @@ const ResumeUploadPanel = () => {
   const loading = useResumeStore((state) => state.uploading);
   const inputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [jobDescription, setJobDescription] = useState("");
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
+  const [customKey, setCustomKey] = useState(() => localStorage.getItem("custom_gemini_api_key") || "");
+
+  const handleKeyChange = (value) => {
+    setCustomKey(value);
+    if (value.trim()) {
+      localStorage.setItem("custom_gemini_api_key", value.trim());
+    } else {
+      localStorage.removeItem("custom_gemini_api_key");
+    }
+  };
 
   const validateFile = (file) => {
     if (!file) {
@@ -49,8 +60,9 @@ const ResumeUploadPanel = () => {
       return;
     }
 
-    await uploadResume(selectedFile);
+    await uploadResume(selectedFile, jobDescription);
     setSelectedFile(null);
+    setJobDescription("");
 
     if (inputRef.current) {
       inputRef.current.value = "";
@@ -120,11 +132,50 @@ const ResumeUploadPanel = () => {
         </div>
       </div>
 
+      <div className="flex flex-col gap-2">
+        <label htmlFor="jobDescription" className="text-sm font-semibold text-slate-700">
+          Job Description (Optional)
+        </label>
+        <textarea
+          id="jobDescription"
+          placeholder="Paste the target job description here to compare and get tailoring recommendations..."
+          className="w-full min-h-[120px] rounded-2xl border border-slate-200 p-4 text-sm outline-none transition focus:border-slate-300 focus:ring-1 focus:ring-slate-300"
+          value={jobDescription}
+          onChange={(e) => setJobDescription(e.target.value)}
+        />
+      </div>
+
+      <div className="border-t border-slate-100 pt-4 flex flex-col gap-2">
+        <details className="group">
+          <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700 select-none hover:text-ink transition">
+            <span className="flex items-center gap-1.5">🔑 Custom Gemini API Key (Optional)</span>
+            <span className="text-xs text-slate-400 transition-transform group-open:rotate-180">▼</span>
+          </summary>
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-slate-500 leading-relaxed">
+              If the server's default Gemini key is expired or overloaded, you can provide your own. It will be stored in your browser's local storage and used directly for your analyses.
+            </p>
+            <input
+              type="password"
+              placeholder="Paste your Gemini API key (AIzaSy...)"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none transition focus:border-slate-300 focus:ring-1 focus:ring-slate-300"
+              value={customKey}
+              onChange={(e) => handleKeyChange(e.target.value)}
+            />
+            {customKey && (
+              <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                ✓ Custom API key is active.
+              </p>
+            )}
+          </div>
+        </details>
+      </div>
+
       {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
 
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-slate-500">
-          Scores combine sections, grammar, spelling, formatting, and technical keywords.
+          Google Gemini AI matches your resume with the job description for ATS readiness.
         </p>
         <button type="submit" className="button-primary" disabled={loading}>
           {loading ? "Analyzing..." : "Upload and analyze"}

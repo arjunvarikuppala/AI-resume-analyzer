@@ -52,15 +52,15 @@ const DashboardPage = () => {
         </div>
 
         <div className="rounded-[28px] border border-white/70 bg-gradient-to-br from-ink via-slate-900 to-slate-800 p-6 text-white shadow-soft">
-          <p className="section-title !text-white/60">What gets analyzed</p>
+          <p className="section-title !text-white/60">AI Analysis Capabilities</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {[
-              "Formatting consistency",
-              "Spelling mistakes",
-              "Grammar issues",
-              "Missing sections",
-              "Technical skills",
-              "ATS compatibility score",
+              "Strengths & weaknesses",
+              "Missing keywords & skills",
+              "Project improvement ideas",
+              "Experience metrics suggestions",
+              "Grammar & tone suggestions",
+              "Job description tailoring",
             ].map((item) => (
               <div key={item} className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3">
                 {item}

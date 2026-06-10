@@ -30,6 +30,11 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
+  const geminiApiKey = localStorage.getItem("custom_gemini_api_key");
+  if (geminiApiKey) {
+    config.headers["x-gemini-api-key"] = geminiApiKey;
+  }
+
   return config;
 });
 
