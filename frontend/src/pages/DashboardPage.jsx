@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
+import EmployerDashboard from "./EmployerDashboard";
+
 import AnalyzingOverlay from "../components/AnalyzingOverlay";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ResumeUploadPanel from "../components/ResumeUploadPanel";
@@ -20,8 +22,12 @@ const DashboardPage = () => {
     loadDashboard();
   }, [loadDashboard]);
 
-  if (loading) {
+  if (loading && user?.role !== "employer") {
     return <LoadingSpinner label="Loading dashboard..." />;
+  }
+
+  if (user?.role === "employer") {
+    return <EmployerDashboard />;
   }
 
   return (

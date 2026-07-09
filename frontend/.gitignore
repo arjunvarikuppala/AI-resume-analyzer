@@ -1,0 +1,13 @@
+node_modules
+Backend/node_modules
+Frontend/node_modules
+Backend/.env
+Frontend/.env
+.env
+Frontend/dist
+Backend/coverage
+Frontend/coverage
+*.log
+Thumbs.db
+.DS_Store
+

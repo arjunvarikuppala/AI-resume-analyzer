@@ -10,6 +10,8 @@ import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResumeDetailPage from "./pages/ResumeDetailPage";
+import JobsPage from "./pages/JobsPage";
+import ApplicantsPage from "./pages/ApplicantsPage";
 import { useAuthStore } from "./stores/authStore";
 import { useResumeStore } from "./stores/resumeStore";
 
@@ -57,6 +59,8 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/resume/:id" element={<ResumeDetailPage />} />
+        <Route path="/jobs" element={<JobsPage />} />
+        <Route path="/applicants" element={<ApplicantsPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

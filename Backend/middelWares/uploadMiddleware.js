@@ -39,3 +39,4 @@ const upload = multer({
 });
 
 export const uploadSingleResume = upload.single("resume");
+export const uploadMultipleResumes = upload.array("resumes", 20);

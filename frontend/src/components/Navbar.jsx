@@ -32,9 +32,20 @@ const Navbar = () => {
           <NavLink to="/dashboard" className={linkClass}>
             Dashboard
           </NavLink>
-          <NavLink to="/history" className={linkClass}>
-            History
-          </NavLink>
+          {user?.role === "employer" ? (
+            <NavLink to="/applicants" className={linkClass}>
+              Applicants
+            </NavLink>
+          ) : (
+            <>
+              <NavLink to="/history" className={linkClass}>
+                History
+              </NavLink>
+              <NavLink to="/jobs" className={linkClass}>
+                Browse Jobs
+              </NavLink>
+            </>
+          )}
         </nav>
 
         <div className="flex items-center gap-3">

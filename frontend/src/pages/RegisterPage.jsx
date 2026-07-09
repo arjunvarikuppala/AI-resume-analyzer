@@ -8,7 +8,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const register = useAuthStore((state) => state.register);
   const user = useAuthStore((state) => state.user);
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "", role: "employee", companyName: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -75,6 +75,49 @@ const RegisterPage = () => {
                 }
               />
             </div>
+
+            <div className="flex gap-6 py-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <input
+                  type="radio"
+                  value="employee"
+                  checked={form.role === "employee"}
+                  onChange={(e) => setForm((c) => ({ ...c, role: e.target.value, companyName: "" }))}
+                  className="accent-coral"
+                />
+                Job Seeker
+              </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <input
+                  type="radio"
+                  value="employer"
+                  checked={form.role === "employer"}
+                  onChange={(e) => setForm((c) => ({ ...c, role: e.target.value }))}
+                  className="accent-coral"
+                />
+                Employer
+              </label>
+            </div>
+
+            {form.role === "employer" && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="companyName">
+                  Company Name
+                </label>
+                <input
+                  id="companyName"
+                  type="text"
+                  className="field"
+                  placeholder="Acme Corp"
+                  value={form.companyName}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, companyName: event.target.value }))
+                  }
+                  required
+                />
+              </div>
+            )}
+
 
             {error ? (
               <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">

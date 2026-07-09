@@ -39,6 +39,7 @@ ${jobDescription}
 Provide the analysis in the following JSON format. Ensure all array fields have relevant text strings and the scores are integers between 0 and 100:
 
 {
+  "isResume": true, // Boolean. True if the text represents a valid resume, CV, or professional profile. False if it is a completely unrelated document (e.g., recipe, random article, novel, random characters).
   "atsScore": 85, // ATS Score (0-100) based on content structure, section completeness, formatting suggestions, and skill matching
   "aiSummary": "...", // A professional 2-3 sentence summary of the resume's overall profile
   "strengths": ["...", "..."], // Array of 3-5 key professional strengths found in the resume
@@ -96,10 +97,11 @@ Provide the analysis in the following JSON format. Ensure all array fields have 
 
           // Fast fail on auth/configuration errors since retrying won't help
           const isAuthError = 
-            errorMsg.includes("API key") || 
+            (errorMsg.includes("API key") || 
             errorMsg.includes("API_KEY") || 
             errorMsg.includes("403") || 
-            errorMsg.includes("invalid key");
+            errorMsg.includes("invalid key")) && 
+            !errorMsg.includes("429");
 
           if (isAuthError) {
             console.error(`Auth/Configuration error on model ${modelName}:`, error);
@@ -129,11 +131,12 @@ Provide the analysis in the following JSON format. Ensure all array fields have 
       }
     } catch (modelSetupError) {
       const isAuthError = 
-        modelSetupError.message.includes("authorization failure") || 
+        (modelSetupError.message.includes("authorization failure") || 
         modelSetupError.message.includes("API key") || 
         modelSetupError.message.includes("API_KEY") || 
         modelSetupError.message.includes("403") || 
-        modelSetupError.message.includes("invalid key");
+        modelSetupError.message.includes("invalid key")) && 
+        !modelSetupError.message.includes("429");
 
       if (isAuthError) {
         throw modelSetupError;
@@ -147,3 +150,65 @@ Provide the analysis in the following JSON format. Ensure all array fields have 
   console.error("All Gemini models failed to analyze resume. Last error:", lastError);
   throw new Error("Failed to analyze resume using Gemini AI after trying multiple models: " + (lastError?.message || "Unknown error"));
 };
+
+/**
+ * Calculates a semantic match score between a resume and a job description using Gemini text embeddings.
+ * @param {string} resumeText - Extracted text of the resume
+ * @param {string} jobDescription - Job description text
+ * @returns {Promise<number>} Match score from 0 to 100
+ */
+export const calculateSemanticMatch = async (resumeText, jobDescription, customApiKey = null) => {
+  console.log("calculateSemanticMatch called with jobDescription length:", jobDescription?.length);
+  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "your_gemini_api_key_here") {
+    console.warn("Gemini API key not configured, falling back to basic matching.");
+    return fallbackMatch(resumeText, jobDescription);
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+
+    const [resumeEmb, jobEmb] = await Promise.all([
+      model.embedContent(resumeText.slice(0, 5000)), // Limit text length for embedding if needed
+      model.embedContent(jobDescription.slice(0, 5000))
+    ]);
+
+    const v1 = resumeEmb.embedding.values;
+    const v2 = jobEmb.embedding.values;
+
+    // Cosine similarity
+    let dotProduct = 0;
+    let norm1 = 0;
+    let norm2 = 0;
+    for (let i = 0; i < v1.length; i++) {
+      dotProduct += v1[i] * v2[i];
+      norm1 += v1[i] * v1[i];
+      norm2 += v2[i] * v2[i];
+    }
+    const similarity = dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
+    
+    // Scale similarity (usually between -1 and 1) to 0-100
+    // In practice, text embeddings are often strictly positive, so similarity is 0 to 1
+    const score = Math.max(0, Math.min(100, Math.round(similarity * 100)));
+    return score;
+  } catch (error) {
+    console.error("Error calculating semantic match with Gemini:", error);
+    return fallbackMatch(resumeText, jobDescription);
+  }
+};
+
+const fallbackMatch = (resumeText, jobDescription) => {
+  const rWords = new Set(resumeText.toLowerCase().match(/\b\w+\b/g) || []);
+  const jWords = new Set(jobDescription.toLowerCase().match(/\b\w+\b/g) || []);
+  if (jWords.size === 0) return 0;
+  
+  let matchCount = 0;
+  for (const word of jWords) {
+    if (rWords.has(word)) {
+      matchCount++;
+    }
+  }
+  return Math.round((matchCount / jWords.size) * 100);
+};
+

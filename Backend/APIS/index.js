@@ -1,9 +1,13 @@
 import authRoutes from "./auth/authRoutes.js";
 import resumeRoutes from "./resume/resumeRoutes.js";
+import jobRoutes from "./jobs/jobRoutes.js";
+import applicationRoutes from "./applications/applicationRoutes.js";
 
 export const registerApiRoutes = (app) => {
   app.use("/api/auth", authRoutes);
   app.use("/api/resume", resumeRoutes);
+  app.use("/api/jobs", jobRoutes);
+  app.use("/api/applications", applicationRoutes);
 
   app.get("/api/debug/env", (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;

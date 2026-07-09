@@ -11,11 +11,15 @@ const createToken = (userId) =>
   });
 
 export const register = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role, companyName } = req.body;
   const errors = validateAuthPayload({ email, password });
 
   if (errors.length) {
     throw new ApiError(400, "Invalid registration payload.", errors);
+  }
+
+  if (role === "employer" && (!companyName || companyName.trim() === "")) {
+    throw new ApiError(400, "Company name is required for employers.");
   }
 
   const normalizedEmail = email.toLowerCase().trim();
@@ -28,6 +32,8 @@ export const register = asyncHandler(async (req, res) => {
   const user = await User.create({
     email: normalizedEmail,
     password,
+    role: role === "employer" ? "employer" : "employee",
+    companyName: role === "employer" ? companyName.trim() : undefined,
   });
 
   res.status(201).json({
@@ -36,6 +42,8 @@ export const register = asyncHandler(async (req, res) => {
     user: {
       id: user._id,
       email: user.email,
+      role: user.role,
+      companyName: user.companyName,
       createdAt: user.createdAt,
     },
   });
@@ -62,6 +70,8 @@ export const login = asyncHandler(async (req, res) => {
     user: {
       id: user._id,
       email: user.email,
+      role: user.role,
+      companyName: user.companyName,
       createdAt: user.createdAt,
     },
   });
