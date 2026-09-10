@@ -4,11 +4,8 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 export const getNodeEnv = () => process.env.NODE_ENV || "development";
-
-if (getNodeEnv() !== "production") {
-  dotenv.config({ path: path.resolve(__dirname, "../.env") });
-}
 
 const DEFAULT_PORT = 5000;
 const DEFAULT_HOST = "0.0.0.0";

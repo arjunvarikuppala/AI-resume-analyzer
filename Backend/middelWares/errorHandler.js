@@ -18,6 +18,34 @@ export const errorHandler = (error, _req, res, _next) => {
     return;
   }
 
+  // Handle MongoDB duplicate key error (code 11000)
+  if (error.code === 11000) {
+    const keys = Object.keys(error.keyPattern || error.keyValue || {});
+    const field = keys.length ? keys[0] : "field";
+    res.status(409).json({
+      message: `An account with this ${field} already exists.`,
+    });
+    return;
+  }
+
+  // Handle Mongoose ValidationError
+  if (error.name === "ValidationError") {
+    const details = Object.values(error.errors || {}).map((err) => err.message);
+    res.status(400).json({
+      message: "Validation failed.",
+      details,
+    });
+    return;
+  }
+
+  // Handle Mongoose connection/buffering timeout
+  if (error.name === "MongooseError" && error.message?.includes("buffering timed out")) {
+    res.status(503).json({
+      message: "Database connection timeout. Please check database connectivity.",
+    });
+    return;
+  }
+
   const statusCode = error.statusCode || 500;
   const payload = {
     message: error.message || "Internal server error.",

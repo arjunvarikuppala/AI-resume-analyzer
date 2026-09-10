@@ -1,8 +1,20 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import {
+  ArrowUpRight,
+  Award,
+  CheckCircle,
+  FileCheck2,
+  FileText,
+  History,
+  Layers,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 
 import EmployerDashboard from "./EmployerDashboard";
-
 import AnalyzingOverlay from "../components/AnalyzingOverlay";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ResumeUploadPanel from "../components/ResumeUploadPanel";
@@ -30,46 +42,96 @@ const DashboardPage = () => {
     return <EmployerDashboard />;
   }
 
+  const latestScore = latestResume?.score ?? "--";
+  const atsScore = latestResume?.atsScore ?? latestResume?.score ?? "--";
+  const jobMatchScore = latestResume?.jobMatchScore ? `${latestResume.jobMatchScore}%` : "Not evaluated";
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 pb-12">
       <AnalyzingOverlay />
-      <section className="panel grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="space-y-4">
-          <p className="section-title">Overview</p>
-          <h1 className="max-w-2xl text-4xl font-semibold text-ink">
-            Resume scoring and improvement suggestions in one place.
-          </h1>
-          <p className="max-w-2xl text-base text-slate-600">
-            Signed in as {user?.email}. Upload a resume to evaluate ATS compatibility, missing
-            sections, technical skills, grammar quality, spelling issues, and formatting.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              ["Analyses", history.length],
-              ["Latest score", latestResume?.score ?? "--"],
-              ["ATS score", latestResume?.atsScore ?? "--"],
-            ].map(([label, value]) => (
-              <div key={label} className="metric-tile">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{label}</p>
-                <p className="mt-3 text-3xl font-bold text-ink">{value}</p>
+
+      {/* Hero Banner Section */}
+      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="panel flex flex-col justify-between shadow-sm">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="pill-indigo">
+                <Sparkles className="h-3.5 w-3.5" />
+                Resume Dashboard
+              </span>
+              <span className="text-xs font-medium text-slate-400">
+                {user?.email}
+              </span>
+            </div>
+
+            <h1 className="text-3xl font-extrabold text-slate-900 sm:text-4xl tracking-tight">
+              Optimize your resume for any hiring pipeline.
+            </h1>
+            <p className="text-sm leading-relaxed text-slate-600">
+              Upload your resume to receive instantaneous ATS compatibility scoring, keyword coverage audits, and actionable rewrites.
+            </p>
+          </div>
+
+          <div className="mt-8 grid grid-cols-3 gap-3">
+            <div className="metric-tile">
+              <div className="flex items-center gap-2 text-indigo-600">
+                <FileText className="h-4 w-4" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Analyses</span>
               </div>
-            ))}
+              <p className="mt-2 text-2xl font-extrabold text-slate-900">{history.length}</p>
+            </div>
+
+            <div className="metric-tile">
+              <div className="flex items-center gap-2 text-emerald-600">
+                <Award className="h-4 w-4" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Latest ATS</span>
+              </div>
+              <p className="mt-2 text-2xl font-extrabold text-slate-900">
+                {atsScore !== "--" ? `${atsScore}%` : "--"}
+              </p>
+            </div>
+
+            <div className="metric-tile">
+              <div className="flex items-center gap-2 text-blue-600">
+                <Target className="h-4 w-4" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Match Fit</span>
+              </div>
+              <p className="mt-2 text-2xl font-extrabold text-slate-900">{jobMatchScore}</p>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/70 bg-gradient-to-br from-ink via-slate-900 to-slate-800 p-6 text-white shadow-soft">
-          <p className="section-title !text-white/60">AI Analysis Capabilities</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {/* AI Capabilities Card */}
+        <div className="panel-dark flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="pill !border-indigo-400/30 !bg-indigo-500/20 !text-indigo-300">
+                <Zap className="h-3.5 w-3.5 text-indigo-400" />
+                AI Diagnostic Engine
+              </span>
+              <span className="text-xs text-slate-400">Gemini 2.5 / 3.0</span>
+            </div>
+            <h2 className="mt-4 text-2xl font-bold text-white">What we evaluate</h2>
+            <p className="mt-1 text-xs text-slate-400">
+              Six-dimensional resume analysis calibrated to real-world ATS software.
+            </p>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-2.5">
             {[
-              "Strengths & weaknesses",
-              "Missing keywords & skills",
-              "Project improvement ideas",
-              "Experience metrics suggestions",
-              "Grammar & tone suggestions",
-              "Job description tailoring",
-            ].map((item) => (
-              <div key={item} className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3">
-                {item}
+              "ATS Parse Compatibility",
+              "Missing Technical Keywords",
+              "Action-Driven Bullet Points",
+              "Measurable Metrics & Impact",
+              "Grammar, Tone & Clarity",
+              "Job Description Match Rate",
+            ].map((feature) => (
+              <div
+                key={feature}
+                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-medium text-slate-200"
+              >
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate">{feature}</span>
               </div>
             ))}
           </div>
@@ -77,43 +139,52 @@ const DashboardPage = () => {
       </section>
 
       {error ? (
-        <div className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           {error}
         </div>
       ) : null}
 
+      {/* Upload Component */}
       <ResumeUploadPanel />
 
+      {/* Score and Detailed Insights */}
       {latestResume ? (
-        <>
-          <ScoreOverview />
-        </>
+        <ScoreOverview />
       ) : (
-        <div className="panel flex flex-col gap-4">
-          <p className="section-title">Ready to start</p>
-          <h2 className="text-2xl font-semibold text-ink">No resume analyses yet</h2>
-          <p className="text-sm text-slate-500">
-            Upload your first resume above to get a score and targeted recommendations.
+        <div className="panel flex flex-col items-center justify-center py-12 text-center shadow-sm">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+            <FileCheck2 className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-800">No resumes analyzed yet</h2>
+          <p className="mt-1 max-w-md text-sm text-slate-500">
+            Upload your resume above to view an instant breakdown of scores, strengths, and keywords.
           </p>
         </div>
       )}
 
-      {history.length ? (
-        <div className="panel flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="section-title">History Snapshot</p>
-            <h2 className="mt-2 text-2xl font-semibold text-ink">Recent activity</h2>
-          </div>
+      {/* History Snapshot Bar */}
+      {history.length > 0 && (
+        <div className="panel flex flex-wrap items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="pill">{history.length} total analyses</span>
-            <Link className="button-secondary" to="/history">
-              View full history
-            </Link>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+              <History className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-base font-bold text-slate-900">Analysis History</p>
+              <p className="text-xs text-slate-500">
+                You have {history.length} saved resume {history.length === 1 ? "report" : "reports"}
+              </p>
+            </div>
           </div>
+          <Link className="button-secondary" to="/history">
+            <span>View Full History</span>
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
 
 export default DashboardPage;
+

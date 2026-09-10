@@ -1,11 +1,25 @@
 import { Link } from "react-router-dom";
-
-import { useResumeStore } from "../stores/resumeStore";
+import { 
+  FileText, 
+  ArrowUpRight, 
+  Calendar, 
+  Target, 
+  AlertCircle, 
+  Sparkles, 
+  CheckCircle2, 
+  Layers,
+  ChevronRight,
+  TrendingUp,
+  FileCheck2
+} from "lucide-react";
 
 const formatDate = (value) =>
   new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   }).format(new Date(value));
 
 const getScoreBadge = (score) => {
@@ -13,41 +27,33 @@ const getScoreBadge = (score) => {
 
   if (value >= 85) {
     return {
-      label: "Strong",
-      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      label: "Excellent",
+      className: "border-emerald-200/80 bg-emerald-50 text-emerald-700",
+      dotColor: "bg-emerald-500",
     };
   }
 
   if (value >= 70) {
     return {
-      label: "Solid",
-      className: "border-sky-200 bg-sky-50 text-sky-700",
+      label: "Competitive",
+      className: "border-sky-200/80 bg-sky-50 text-sky-700",
+      dotColor: "bg-sky-500",
     };
   }
 
   if (value >= 55) {
     return {
-      label: "Needs work",
-      className: "border-amber-200 bg-amber-50 text-amber-700",
+      label: "Needs Work",
+      className: "border-amber-200/80 bg-amber-50 text-amber-700",
+      dotColor: "bg-amber-500",
     };
   }
 
   return {
     label: "Critical",
-    className: "border-rose-200 bg-rose-50 text-rose-700",
+    className: "border-rose-200/80 bg-rose-50 text-rose-700",
+    dotColor: "bg-rose-500",
   };
-};
-
-const summarizeMissingSkills = (skills = []) => {
-  if (!skills.length) {
-    return "No tracked skill gaps";
-  }
-
-  if (skills.length <= 2) {
-    return skills.join(", ");
-  }
-
-  return `${skills.slice(0, 2).join(", ")} +${skills.length - 2} more`;
 };
 
 const getFileBadge = (fileName = "") => {
@@ -57,159 +63,199 @@ const getFileBadge = (fileName = "") => {
     return extension.slice(0, 3).toUpperCase();
   }
 
-  return "CV";
+  return "PDF";
 };
 
-const HistoryTable = () => {
-  const history = useResumeStore((state) => state.history);
-
-  if (!history.length) {
+const HistoryTable = ({ items = [], totalCount = 0 }) => {
+  if (totalCount === 0) {
     return (
-      <div className="panel relative overflow-hidden">
-        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-gold/20 blur-3xl" />
-        <div className="relative">
-          <p className="section-title">Resume History</p>
-          <h2 className="mt-2 text-3xl font-semibold text-ink">No analyses yet</h2>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-slate-500">
-            Upload your first resume from the dashboard to start tracking improvements, ATS
-            changes, and recurring skill gaps over time.
-          </p>
+      <div className="panel relative overflow-hidden text-center py-16">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-inner">
+          <FileText className="h-8 w-8" />
         </div>
+        <h3 className="mt-4 text-2xl font-bold text-slate-900">No resumes analyzed yet</h3>
+        <p className="mt-2 max-w-md mx-auto text-sm text-slate-500">
+          Upload your first resume from the dashboard to diagnose ATS compatibility, formatting issues, and missing skills.
+        </p>
+        <Link
+          to="/dashboard"
+          className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition hover:scale-105"
+        >
+          <Sparkles className="h-4 w-4" />
+          <span>Upload New Resume</span>
+        </Link>
       </div>
     );
   }
 
-  const atsReadyCount = history.filter((resume) => Number(resume.atsScore) >= 80).length;
+  if (items.length === 0) {
+    return (
+      <div className="panel text-center py-12">
+        <AlertCircle className="mx-auto h-12 w-12 text-slate-400" />
+        <h3 className="mt-3 text-xl font-bold text-slate-900">No matching resumes found</h3>
+        <p className="mt-1 text-sm text-slate-500">Try adjusting your search keywords or tier filters.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="panel relative overflow-hidden">
-      <div className="absolute bottom-0 right-0 h-44 w-44 rounded-full bg-mist/70 blur-3xl" />
-
-      <div className="relative">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="section-title">Resume History</p>
-            <h2 className="mt-2 text-3xl font-semibold text-ink">Previous analyses</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
-              Open any saved report to revisit the exact suggestions, issues, and ATS results tied
-              to that upload.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <span className="pill">{history.length} saved reports</span>
-            <span className="pill">{atsReadyCount} ATS-ready passes</span>
-          </div>
+    <div className="space-y-4">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 shadow-soft backdrop-blur-md">
+        <div className="grid grid-cols-[minmax(0,2.2fr)_1fr_1fr_1.2fr_auto] items-center gap-4 border-b border-slate-100 bg-slate-50/70 px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <span>Resume Document</span>
+          <span>Analysis Date</span>
+          <span>Overall Score</span>
+          <span>ATS Fit & Missing Skills</span>
+          <span className="text-right">Actions</span>
         </div>
 
-        <div className="mt-8 hidden lg:flex lg:flex-col lg:gap-4">
-          <div className="grid grid-cols-[minmax(0,1.7fr)_1fr_0.95fr_0.95fr_auto] gap-4 px-4 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">
-            <span>Resume</span>
-            <span>Analyzed</span>
-            <span>Score</span>
-            <span>ATS + gaps</span>
-            <span className="text-right">Action</span>
-          </div>
-
-          {history.map((resume) => {
+        <div className="divide-y divide-slate-100">
+          {items.map((resume) => {
             const scoreBadge = getScoreBadge(resume.score);
+            const score = Number(resume.score) || 0;
+            const atsScore = Number(resume.atsScore) || 0;
+            const missingSkills = resume.missingSkills || [];
 
             return (
-              <article
+              <div
                 key={resume._id}
-                className="grid items-center gap-4 rounded-[28px] border border-white/80 bg-white/[0.82] p-4 shadow-[0_20px_55px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)] lg:grid-cols-[minmax(0,1.7fr)_1fr_0.95fr_0.95fr_auto]"
+                className="grid grid-cols-[minmax(0,2.2fr)_1fr_1fr_1.2fr_auto] items-center gap-4 px-6 py-4.5 transition hover:bg-slate-50/80 group"
               >
-                <div className="flex min-w-0 items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-ink text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+                {/* Document details */}
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-600 font-bold text-xs border border-indigo-100/80 shadow-sm">
                     {getFileBadge(resume.fileName)}
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="truncate text-lg font-semibold text-ink">{resume.fileName}</h3>
-                    <p className="mt-1 truncate text-sm text-slate-500">
-                      {summarizeMissingSkills(resume.missingSkills)}
+                  <div className="min-w-0 pr-2">
+                    <h4 className="truncate text-base font-bold text-slate-900 group-hover:text-indigo-600 transition">
+                      {resume.fileName}
+                    </h4>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">
+                      ID: {resume._id.slice(-8)} • {resume.issues?.length || 0} issues flagged
                     </p>
                   </div>
                 </div>
 
-                <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Analyzed</p>
-                  <p className="mt-2 text-sm font-semibold text-ink">{formatDate(resume.createdAt)}</p>
+                {/* Date */}
+                <div className="text-xs text-slate-600">
+                  <div className="font-semibold text-slate-800">{formatDate(resume.createdAt)}</div>
                 </div>
 
+                {/* Score */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-900 border border-slate-200">
+                    {score}
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${scoreBadge.className}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${scoreBadge.dotColor}`} />
+                    {scoreBadge.label}
+                  </span>
+                </div>
+
+                {/* ATS & Skills */}
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Score</p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <p className="text-2xl font-bold text-ink">{resume.score}</p>
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${scoreBadge.className}`}
-                    >
-                      {scoreBadge.label}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-800">
+                      ATS Match: <span className={atsScore >= 80 ? "text-emerald-600 font-extrabold" : "text-slate-700"}>{atsScore}%</span>
                     </span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1 max-w-xs">
+                    {missingSkills.length > 0 ? (
+                      missingSkills.slice(0, 2).map((skill, idx) => (
+                        <span key={idx} className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 border border-amber-200/60">
+                          +{skill}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> No skill gaps
+                      </span>
+                    )}
+                    {missingSkills.length > 2 && (
+                      <span className="text-[10px] font-semibold text-slate-400 self-center">
+                        +{missingSkills.length - 2} more
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">ATS + gaps</p>
-                  <p className="mt-2 text-lg font-bold text-ink">{resume.atsScore} ATS</p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {resume.missingSkills?.length ?? 0} missing skills
-                  </p>
-                </div>
-
-                <div className="flex justify-end">
-                  <Link className="button-secondary whitespace-nowrap" to={`/resume/${resume._id}`}>
-                    Open report
+                {/* CTA */}
+                <div className="text-right">
+                  <Link
+                    to={`/resume/${resume._id}`}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/60 px-3.5 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-600 hover:text-white hover:shadow-md"
+                  >
+                    <span>Inspect</span>
+                    <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
-              </article>
+              </div>
             );
           })}
         </div>
       </div>
 
-      <div className="mt-6 space-y-4 lg:hidden">
-        {history.map((resume) => {
+      {/* Mobile Card View */}
+      <div className="grid gap-4 lg:hidden">
+        {items.map((resume) => {
           const scoreBadge = getScoreBadge(resume.score);
+          const atsScore = Number(resume.atsScore) || 0;
+          const missingSkills = resume.missingSkills || [];
 
           return (
             <article
               key={resume._id}
-              className="rounded-[28px] border border-white/80 bg-white/[0.86] p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)]"
+              className="rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-soft backdrop-blur-md"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-[18px] bg-ink text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 font-bold text-xs text-indigo-600 border border-indigo-100">
                     {getFileBadge(resume.fileName)}
                   </div>
-                  <h3 className="truncate text-xl font-semibold text-ink">{resume.fileName}</h3>
-                  <p className="mt-2 text-sm text-slate-500">{formatDate(resume.createdAt)}</p>
+                  <div className="min-w-0">
+                    <h4 className="truncate text-base font-bold text-slate-900">{resume.fileName}</h4>
+                    <p className="text-xs text-slate-400">{formatDate(resume.createdAt)}</p>
+                  </div>
                 </div>
-                <span
-                  className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${scoreBadge.className}`}
-                >
-                  {resume.score}
+
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${scoreBadge.className}`}>
+                  {resume.score} / 100
                 </span>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-[22px] bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">ATS</p>
-                  <p className="mt-2 text-lg font-bold text-ink">{resume.atsScore}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">ATS Fit</span>
+                  <p className="mt-0.5 text-base font-extrabold text-slate-800">{atsScore}%</p>
                 </div>
-                <div className="rounded-[22px] bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Skill gaps</p>
-                  <p className="mt-2 text-lg font-bold text-ink">
-                    {resume.missingSkills?.length ?? 0}
-                  </p>
+                <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Missing Skills</span>
+                  <p className="mt-0.5 text-base font-extrabold text-slate-800">{missingSkills.length}</p>
                 </div>
               </div>
 
-              <p className="mt-4 text-sm leading-6 text-slate-600">
-                {summarizeMissingSkills(resume.missingSkills)}
-              </p>
+              {missingSkills.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {missingSkills.slice(0, 3).map((s, idx) => (
+                    <span key={idx} className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200">
+                      {s}
+                    </span>
+                  ))}
+                  {missingSkills.length > 3 && (
+                    <span className="text-[10px] text-slate-400 self-center">
+                      +{missingSkills.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
 
-              <Link className="button-secondary mt-5 w-full" to={`/resume/${resume._id}`}>
-                Open report
+              <Link
+                to={`/resume/${resume._id}`}
+                className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-indigo-700"
+              >
+                <span>View Full Diagnostic Report</span>
+                <ChevronRight className="h-4 w-4" />
               </Link>
             </article>
           );
