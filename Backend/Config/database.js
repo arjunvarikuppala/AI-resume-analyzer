@@ -30,7 +30,7 @@ export const connectDatabase = async () => {
 
   const tryConnect = async (uri, isFallback = false) => {
     return mongoose.connect(uri, getMongoConnectionOptions()).then((connection) => {
-      console.log(`MongoDB connected${isFallback ? " (fallback to local)" : ""}`);
+      console.log(`✅ MongoDB connected successfully${isFallback ? " (fallback to local instance)" : ""}`);
       return connection;
     });
   };
@@ -40,15 +40,19 @@ export const connectDatabase = async () => {
       return await tryConnect(primaryUri);
     } catch (primaryError) {
       if (primaryUri !== localFallbackUri) {
-        console.warn(`Primary MongoDB connection failed (${primaryError.message}). Attempting local fallback...`);
+        console.warn(`⚠️ Primary MongoDB connection failed (${primaryError.message}). Attempting local fallback...`);
         try {
           return await tryConnect(localFallbackUri, true);
         } catch (fallbackError) {
           databaseConnectionPromise = undefined;
-          throw new Error(`MongoDB connection failed: Primary (${primaryError.message}) and Fallback (${fallbackError.message})`);
+          const msg = `MongoDB connection failed: Primary (${primaryError.message}) and Fallback (${fallbackError.message})`;
+          console.error(`❌ ${msg}`);
+          console.warn("💡 Tip: On Render/Cloud, ensure MONGO_URI is set to a valid MongoDB Atlas connection string in Render Dashboard -> Environment, and whitelist '0.0.0.0/0' in MongoDB Atlas Network Access.");
+          throw new Error(msg);
         }
       }
       databaseConnectionPromise = undefined;
+      console.error(`❌ MongoDB connection failed: ${primaryError.message}`);
       throw primaryError;
     }
   })();

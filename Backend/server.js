@@ -57,7 +57,11 @@ export const initializeApp = async () => {
   if (!initializationPromise) {
     initializationPromise = (async () => {
       ensureRuntimeConfig();
-      await connectDatabase();
+      try {
+        await connectDatabase();
+      } catch (dbError) {
+        console.warn("⚠️ Initial database connection deferred:", dbError.message);
+      }
       return app;
     })().catch((error) => {
       initializationPromise = undefined;
@@ -96,18 +100,23 @@ export const startServer = async () => {
     return server;
   }
 
-  await initializeApp();
-
+  ensureRuntimeConfig();
   const { host, port } = getServerConfig();
 
   server = await new Promise((resolve, reject) => {
     const nextServer = app.listen(port, host, () => {
-      console.log(`API server listening on http://${host}:${port}`);
+      console.log(`🚀 API server listening on http://${host}:${port}`);
       resolve(nextServer);
     });
 
     nextServer.once("error", reject);
   });
+
+  try {
+    await connectDatabase();
+  } catch (error) {
+    console.warn("⚠️ Initial database connection could not be established immediately on boot:", error.message);
+  }
 
   return server;
 };
