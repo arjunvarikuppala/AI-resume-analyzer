@@ -43,6 +43,17 @@ export const createApp = () => {
     res.status(200).json(createHealthPayload());
   });
 
+  // Ensure database is connected before handling API routes
+  // This allows the app to self-heal if the initial connection fails on boot.
+  nextApp.use(async (_req, _res, next) => {
+    try {
+      await connectDatabase();
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
+
   registerApiRoutes(nextApp);
 
   nextApp.use(notFound);

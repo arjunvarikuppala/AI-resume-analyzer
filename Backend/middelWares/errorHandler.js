@@ -38,10 +38,14 @@ export const errorHandler = (error, _req, res, _next) => {
     return;
   }
 
-  // Handle Mongoose connection/buffering timeout
-  if (error.name === "MongooseError" && error.message?.includes("buffering timed out")) {
+  // Handle Mongoose connection/buffering timeout or manual connection failures
+  if (
+    (error.name === "MongooseError" && error.message?.includes("buffering timed out")) ||
+    error.message?.includes("MongoDB connection failed")
+  ) {
     res.status(503).json({
       message: "Database connection timeout. Please check database connectivity.",
+      details: error.message,
     });
     return;
   }
