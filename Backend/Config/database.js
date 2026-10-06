@@ -10,6 +10,7 @@ const DATABASE_STATE_LABELS = {
 };
 
 let databaseConnectionPromise;
+let memoryServerInstance;
 
 export const getDatabaseStatus = () => ({
   readyState: mongoose.connection.readyState,
@@ -25,35 +26,42 @@ export const connectDatabase = async () => {
     return databaseConnectionPromise;
   }
 
-  const primaryUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ai-resume-analyzer";
+  const primaryUri = process.env.MONGO_URI;
   const localFallbackUri = "mongodb://127.0.0.1:27017/ai-resume-analyzer";
 
-  const tryConnect = async (uri, isFallback = false) => {
+  const tryConnect = async (uri, label = "database") => {
     return mongoose.connect(uri, getMongoConnectionOptions()).then((connection) => {
-      console.log(`✅ MongoDB connected successfully${isFallback ? " (fallback to local instance)" : ""}`);
+      console.log(`✅ MongoDB connected successfully via ${label}`);
       return connection;
     });
   };
 
   databaseConnectionPromise = (async () => {
-    try {
-      return await tryConnect(primaryUri);
-    } catch (primaryError) {
-      if (primaryUri !== localFallbackUri) {
+    if (primaryUri) {
+      try {
+        return await tryConnect(primaryUri, "Primary MONGO_URI");
+      } catch (primaryError) {
         console.warn(`⚠️ Primary MongoDB connection failed (${primaryError.message}). Attempting local fallback...`);
-        try {
-          return await tryConnect(localFallbackUri, true);
-        } catch (fallbackError) {
-          databaseConnectionPromise = undefined;
-          const msg = `MongoDB connection failed: Primary (${primaryError.message}) and Fallback (${fallbackError.message})`;
-          console.error(`❌ ${msg}`);
-          console.warn("💡 Tip: On Render/Cloud, ensure MONGO_URI is set to a valid MongoDB Atlas connection string in Render Dashboard -> Environment, and whitelist '0.0.0.0/0' in MongoDB Atlas Network Access.");
-          throw new Error(msg);
-        }
       }
-      databaseConnectionPromise = undefined;
-      console.error(`❌ MongoDB connection failed: ${primaryError.message}`);
-      throw primaryError;
+    }
+
+    try {
+      return await tryConnect(localFallbackUri, "local instance (127.0.0.1)");
+    } catch (localError) {
+      console.warn(`⚠️ Local MongoDB connection failed (${localError.message}). Initializing In-Memory MongoDB Server...`);
+      try {
+        const { MongoMemoryServer } = await import("mongodb-memory-server");
+        if (!memoryServerInstance) {
+          memoryServerInstance = await MongoMemoryServer.create();
+        }
+        const memoryUri = memoryServerInstance.getUri();
+        return await tryConnect(memoryUri, "in-memory fallback database");
+      } catch (memoryError) {
+        databaseConnectionPromise = undefined;
+        const msg = `MongoDB connection failed: Primary, Local, and In-Memory fallbacks all failed (${memoryError.message})`;
+        console.error(`❌ ${msg}`);
+        throw new Error(msg);
+      }
     }
   })();
 
@@ -63,10 +71,14 @@ export const connectDatabase = async () => {
 export const closeDatabase = async () => {
   databaseConnectionPromise = undefined;
 
-  if (mongoose.connection.readyState === 0) {
-    return;
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+    console.log("MongoDB disconnected");
   }
 
-  await mongoose.disconnect();
-  console.log("MongoDB disconnected");
+  if (memoryServerInstance) {
+    await memoryServerInstance.stop();
+    memoryServerInstance = undefined;
+  }
 };
+
