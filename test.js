@@ -1,0 +1,1 @@
+fetch('https://ai-resume-analyzer-gol8.onrender.com/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'test@example.com', password: 'password', role: 'Job Seeker' }) }).then(res => res.text()).then(console.log);
