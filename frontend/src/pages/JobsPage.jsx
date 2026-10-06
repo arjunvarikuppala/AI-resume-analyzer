@@ -1,17 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   AlertCircle,
   ArrowRight,
+  Award,
   Briefcase,
   Building2,
   CheckCircle2,
+  FileCheck,
   FileText,
   MapPin,
   Search,
   Sparkles,
+  Target,
+  Upload,
+  X,
   XCircle,
 } from "lucide-react";
 
+import AnalyzingOverlay from "../components/AnalyzingOverlay";
 import { applyToJob, getEmployeeApplications } from "../services/applicationService";
 import { getJobs } from "../services/jobService";
 import { useResumeStore } from "../stores/resumeStore";
@@ -21,9 +27,17 @@ const JobsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [applicationStatusMap, setApplicationStatusMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [applyingId, setApplyingId] = useState(null);
+
+  // Modal State for Apply & ATS Check
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [newFile, setNewFile] = useState(null);
+  const [analyzingResume, setAnalyzingResume] = useState(false);
+  const [tempResume, setTempResume] = useState(null);
+  const [applying, setApplying] = useState(false);
+  const fileInputRef = useRef(null);
 
   const latestResume = useResumeStore((state) => state.latestResume);
+  const uploadResume = useResumeStore((state) => state.uploadResume);
 
   useEffect(() => {
     fetchJobs();
@@ -53,21 +67,53 @@ const JobsPage = () => {
     }
   };
 
-  const handleApply = async (jobId) => {
-    if (!latestResume) {
-      alert("Please upload a resume in the Dashboard first to apply.");
+  const handleOpenApplyModal = (job) => {
+    setSelectedJob(job);
+    setNewFile(null);
+    setTempResume(null);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedJob(null);
+    setNewFile(null);
+    setTempResume(null);
+  };
+
+  const handleUploadAndAnalyze = async () => {
+    if (!newFile) return;
+    setAnalyzingResume(true);
+    try {
+      const analyzed = await uploadResume(newFile, selectedJob?.description || "");
+      if (analyzed) {
+        setTempResume(analyzed);
+      } else {
+        alert("Failed to analyze resume. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error analyzing resume file.");
+    } finally {
+      setAnalyzingResume(false);
+    }
+  };
+
+  const handleConfirmApply = async (resumeToUse) => {
+    const targetResume = resumeToUse || tempResume || latestResume;
+    if (!targetResume) {
+      alert("Please upload or select a resume to apply.");
       return;
     }
 
-    setApplyingId(jobId);
+    setApplying(true);
     try {
-      await applyToJob(jobId, latestResume._id);
-      setApplicationStatusMap((prev) => ({ ...prev, [jobId]: "applied" }));
+      await applyToJob(selectedJob._id, targetResume._id);
+      setApplicationStatusMap((prev) => ({ ...prev, [selectedJob._id]: "applied" }));
+      handleCloseModal();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || err.message || "Failed to apply");
+      alert(err.response?.data?.message || err.message || "Failed to submit application");
     } finally {
-      setApplyingId(null);
+      setApplying(false);
     }
   };
 
@@ -76,7 +122,9 @@ const JobsPage = () => {
     const titleMatch = (job.title || "").toLowerCase().includes(q);
     const locationMatch = (job.location || "").toLowerCase().includes(q);
     const descMatch = (job.description || "").toLowerCase().includes(q);
-    const skillsMatch = Array.isArray(job.requiredSkills) && job.requiredSkills.some((s) => s.toLowerCase().includes(q));
+    const skillsMatch =
+      Array.isArray(job.requiredSkills) &&
+      job.requiredSkills.some((s) => s.toLowerCase().includes(q));
     return titleMatch || locationMatch || descMatch || skillsMatch;
   });
 
@@ -92,8 +140,12 @@ const JobsPage = () => {
     );
   }
 
+  const activeResumeToUse = tempResume || latestResume;
+
   return (
     <div className="flex flex-col gap-8 pb-12">
+      <AnalyzingOverlay />
+
       {/* Header Banner */}
       <div className="panel flex flex-col justify-between gap-5 shadow-sm">
         <div className="space-y-2">
@@ -107,10 +159,10 @@ const JobsPage = () => {
             </span>
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Browse Opportunities & Match Fit
+            Browse Opportunities & Check ATS Fit
           </h1>
           <p className="text-sm leading-relaxed text-slate-600 max-w-2xl">
-            When you apply with your active resume, our AI automatically calculates a semantic match score for the hiring manager.
+            Upload your resume or apply directly with your active resume. Our AI automatically evaluates your ATS compatibility score and semantic fit for every role.
           </p>
         </div>
 
@@ -126,12 +178,25 @@ const JobsPage = () => {
           />
         </div>
 
-        {!latestResume && (
-          <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-xs font-medium text-amber-800">
-            <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
-            <span>
-              <strong>Note:</strong> Please upload a resume from your Dashboard first before applying to roles.
-            </span>
+        {/* Active Resume Quick Bar */}
+        {latestResume ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 text-xs font-medium text-slate-700">
+            <div className="flex items-center gap-2.5">
+              <FileCheck className="h-4 w-4 text-indigo-600 shrink-0" />
+              <span>
+                Active Resume: <strong className="text-slate-900">{latestResume.fileName}</strong>
+              </span>
+              <span className="pill !text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                ATS Score: {latestResume.atsScore || latestResume.score}%
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-xs font-medium text-amber-900">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+              <span>No active resume uploaded yet. You can upload a resume right when applying to test your ATS score!</span>
+            </div>
           </div>
         )}
       </div>
@@ -224,24 +289,12 @@ const JobsPage = () => {
 
                   return (
                     <button
-                      onClick={() => handleApply(job._id)}
-                      disabled={applyingId === job._id || !latestResume}
-                      className="button-primary w-full"
+                      onClick={() => handleOpenApplyModal(job)}
+                      className="button-primary w-full flex items-center justify-center gap-2"
                     >
-                      {applyingId === job._id ? (
-                        <>
-                          <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                          </svg>
-                          <span>Submitting Application...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Apply with Active Resume</span>
-                          <ArrowRight className="h-4 w-4" />
-                        </>
-                      )}
+                      <Sparkles className="h-4 w-4" />
+                      <span>Check ATS Fit & Apply</span>
+                      <ArrowRight className="h-4 w-4" />
                     </button>
                   );
                 })()}
@@ -250,9 +303,186 @@ const JobsPage = () => {
           ))}
         </div>
       )}
+
+      {/* Apply & Check ATS Modal */}
+      {selectedJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-xl rounded-[28px] bg-white p-6 md:p-8 shadow-2xl my-8 animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-slate-100">
+              <div>
+                <span className="pill-indigo !text-[10px]">
+                  <Sparkles className="h-3 w-3" />
+                  ATS Match & Job Application
+                </span>
+                <h2 className="mt-1 text-2xl font-extrabold text-slate-900">
+                  {selectedJob.title}
+                </h2>
+                <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 font-medium">
+                  <span>{selectedJob.employerId?.companyName || "Employer"}</span>
+                  <span>•</span>
+                  <span>{selectedJob.location}</span>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-6">
+              {/* Option A: Current Active Resume */}
+              {latestResume && !tempResume && (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">{latestResume.fileName}</p>
+                        <p className="text-[11px] text-slate-500">Your currently active resume</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200">
+                        ATS: {latestResume.atsScore || latestResume.score}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleConfirmApply(latestResume)}
+                    disabled={applying}
+                    className="button-primary w-full mt-4"
+                  >
+                    {applying ? (
+                      <span>Submitting Application...</span>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Apply with Active Resume</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Temp Analyzed Resume Feedback */}
+              {tempResume && (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <span className="text-xs font-bold text-emerald-900">
+                        Resume Analyzed & Matched!
+                      </span>
+                    </div>
+                    <span className="text-xs font-medium text-slate-500">{tempResume.fileName}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="rounded-xl bg-white p-3 border border-emerald-100 text-center">
+                      <div className="flex items-center justify-center gap-1 text-emerald-600 text-xs font-bold">
+                        <Award className="h-3.5 w-3.5" />
+                        <span>ATS Score</span>
+                      </div>
+                      <p className="text-2xl font-extrabold text-slate-900 mt-1">
+                        {tempResume.atsScore || tempResume.score}%
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-white p-3 border border-emerald-100 text-center">
+                      <div className="flex items-center justify-center gap-1 text-indigo-600 text-xs font-bold">
+                        <Target className="h-3.5 w-3.5" />
+                        <span>Job Match</span>
+                      </div>
+                      <p className="text-2xl font-extrabold text-slate-900 mt-1">
+                        {tempResume.jobMatchScore}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {tempResume.aiSummary && (
+                    <p className="text-xs text-slate-600 leading-relaxed bg-white/70 p-3 rounded-xl border border-emerald-100">
+                      {tempResume.aiSummary}
+                    </p>
+                  )}
+
+                  <button
+                    onClick={() => handleConfirmApply(tempResume)}
+                    disabled={applying}
+                    className="button-primary w-full mt-2"
+                  >
+                    {applying ? (
+                      <span>Submitting Application...</span>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Submit Application with Checked Resume</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Option B: Upload New Resume for ATS Check */}
+              <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center bg-slate-50/50 hover:border-indigo-300 transition-colors">
+                <input
+                  type="file"
+                  accept=".pdf,.docx"
+                  ref={fileInputRef}
+                  onChange={(e) => setNewFile(e.target.files?.[0] || null)}
+                  className="hidden"
+                  id="modal-resume-upload"
+                />
+
+                <label htmlFor="modal-resume-upload" className="cursor-pointer flex flex-col items-center">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 mb-2 border border-indigo-100">
+                    <Upload className="h-5 w-5" />
+                  </div>
+                  <span className="text-sm font-bold text-slate-900">
+                    {newFile ? newFile.name : "Upload a New Resume to Check ATS Score"}
+                  </span>
+                  <span className="text-xs text-slate-500 mt-1">
+                    Upload PDF or DOCX file to test fit for this specific job description
+                  </span>
+                </label>
+
+                {newFile && (
+                  <div className="mt-4 flex items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleUploadAndAnalyze}
+                      disabled={analyzingResume}
+                      className="button-secondary !py-2 !px-4 !text-xs font-bold"
+                    >
+                      {analyzingResume ? (
+                        <span>Evaluating ATS Score...</span>
+                      ) : (
+                        <>
+                          <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                          <span>Check ATS Score & Job Fit</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-5 mt-6 border-t border-slate-100">
+              <button onClick={handleCloseModal} className="button-secondary !py-2">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default JobsPage;
-
