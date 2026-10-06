@@ -307,7 +307,7 @@ const JobsPage = () => {
       {/* Apply & Check ATS Modal */}
       {selectedJob && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-xl rounded-[28px] bg-white p-6 md:p-8 shadow-2xl my-8 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[28px] bg-white p-5 md:p-8 shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-4 border-b border-slate-100">
               <div>

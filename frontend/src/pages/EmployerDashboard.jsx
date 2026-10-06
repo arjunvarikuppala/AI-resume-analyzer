@@ -296,8 +296,8 @@ const EmployerDashboard = () => {
 
       {/* Create / Edit Job Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[28px] bg-white p-6 md:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[28px] bg-white p-5 md:p-8 shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
                 <span className="pill-indigo !text-[10px]">Job Management</span>
